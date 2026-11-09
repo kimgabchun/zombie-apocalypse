@@ -166,7 +166,7 @@ function playImportedStory(overrideData=null,progressKey=STORY_PROGRESS_KEY){
  function show(){
   if(finished){$('#app').innerHTML='<div class="menu"><h1>생존 실패</h1><p>HP가 0이 되었습니다. 갤러리 엔딩으로 등록되지 않습니다.</p><button class="primary" id="storyRestart">처음부터 다시</button><button class="secondary" id="storyMenu">메뉴로</button></div>';$('#storyRestart').onclick=restartPreview;$('#storyMenu').onclick=menu;return}
   const sc=map.get(current);
-  const lines=sc.text.split(/\\n+/).map(x=>x.trim()).filter(Boolean);
+  const lines=sc.text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
   const last=Math.max(0,lines.length-1);
   beat=Math.min(beat,last);
   const ready=beat>=last;
