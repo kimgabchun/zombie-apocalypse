@@ -1,0 +1,13 @@
+{
+  "format": "zombie-vn-story-pack-v1",
+  "packId": "sample-structure-only-v1",
+  "startSceneId": "COM-01-S001",
+  "scenes": [
+    {
+      "id": "COM-01-S001",
+      "speaker": "시스템",
+      "text": "대본 데이터 형식 확인용 예시입니다. 공식 제1장 대본이 아닙니다.",
+      "choices": []
+    }
+  ]
+}
