@@ -100,6 +100,28 @@ function transition(state,event){
  Object.defineProperty(next.processedEventIds,event.id,{value:true,enumerable:true,writable:true,configurable:true});
  return {state:next,applied:true};
 }
+function applyStoryEvent(state,event,confirmed=false){
+ if(!event||typeof event.id!=='string'||!event.id||event.id.length>160||!Array.isArray(event.effects))throw Error('유효하지 않은 사건');
+ if(state.pendingAction&&(!confirmed||state.pendingAction.id!==event.id))throw Error('확인되지 않은 위험 행동');
+ if(confirmed&&(!state.pendingAction||state.pendingAction.id!==event.id))throw Error('위험 행동 최종 확인 필요');
+ if(Object.prototype.hasOwnProperty.call(state.processedEventIds,event.id))return {state,applied:false};
+ if(!check(state,event.requires||[]))return {state,applied:false,blocked:true};
+ const normal=event.effects.filter(e=>allowedEffects.has(e.type));
+ const narrative=event.effects.filter(e=>!allowedEffects.has(e.type));
+ const normalResult=transition(state,{id:event.id+':internal',effects:normal});
+ let next=normalResult.state;
+ if(narrative.length){
+  // Apply all narrative changes on a temporary copy; never commit partial results.
+  const result=narrativeEvent({...next,pendingAction:null},{id:event.id+':narrative',effects:narrative});
+  next=result.state;
+ }
+ // Internal event markers are discarded; only the final event ID is retained.
+ delete next.processedEventIds[event.id+':internal'];
+ delete next.processedEventIds[event.id+':narrative'];
+ next.pendingAction=null;
+ Object.defineProperty(next.processedEventIds,event.id,{value:true,enumerable:true,writable:true,configurable:true});
+ return {state:next,applied:true};
+}
 function requestRisk(state,id,description){if(state.pendingAction)throw Error('이미 확인 대기 중');return {...state,pendingAction:{id,description}};}
 function cancelRisk(state){return {...state,pendingAction:null};}
 function confirmRisk(state,event){if(!state.pendingAction||state.pendingAction.id!==event.id)throw Error('확인되지 않은 위험 행동');const result=transition(state,event);return {...result,state:{...result.state,pendingAction:null}};}
@@ -131,8 +153,13 @@ function selfTest(){
  test('companion movement only chapter 10 scene 12',()=>{const met=narrativeEvent(initial,{id:'meet',effects:[{type:'characterEncounter',heroineId:'HYJ'}]}).state;const locked=narrativeEvent(met,{id:'lock',effects:[{type:'routeLock',heroineId:'HYJ',sceneId:'COM-10-S011'}]}).state;const moved=narrativeEvent(locked,{id:'move',effects:[{type:'companionMove',heroineId:'HYJ',sceneId:'COM-10-S012'}]}).state;return moved.officialCompanionId==='HYJ'});
  test('narrative event idempotency',()=>{const a=narrativeEvent(initial,{id:'meet',effects:[{type:'characterEncounter',heroineId:'HYJ'}]});return !narrativeEvent(a.state,{id:'meet',effects:[{type:'characterEncounter',heroineId:'HYJ'}]}).applied});
  test('legacy save compatibility',()=>{const legacy={hp:100,infectionStage:0,noise:0,positionId:null,processedEventIds:{},pendingAction:null};const restored=restoreState(legacy);return !!restored&&restored.characters.HYJ.met===false&&!restored.route.locked});
+ test('story event combines HP and encounter',()=>{const a=applyStoryEvent(initial,{id:'combo',effects:[{type:'hpDelta',value:-5},{type:'characterEncounter',heroineId:'HYJ'}]});return a.state.hp===95&&a.state.characters.HYJ.met&&initial.hp===100});
+ test('story event rollback on invalid narrative',()=>{try{applyStoryEvent(initial,{id:'badcombo',effects:[{type:'hpDelta',value:-5},{type:'consent',heroineId:'HYJ',actionId:'help',granted:true}]});return false}catch{return initial.hp===100&&!initial.processedEventIds.badcombo}});
+ test('story event requires risk confirmation',()=>{const p=requestRisk(initial,'r1','test');try{applyStoryEvent(p,{id:'r1',effects:[{type:'hpDelta',value:-5}]});return false}catch{return p.hp===100}});
+ test('confirmed story risk applies once',()=>{const p=requestRisk(initial,'r1','test');const a=applyStoryEvent(p,{id:'r1',effects:[{type:'hpDelta',value:-5}]},true);return a.state.hp===95&&!a.state.pendingAction&&!applyStoryEvent(a.state,{id:'r1',effects:[]}).applied});
+ test('blocked story event leaves state unchanged',()=>{const a=applyStoryEvent(initial,{id:'no',requires:[{type:'position',value:'X'}],effects:[{type:'characterEncounter',heroineId:'HYJ'}]});return a.blocked&&a.state===initial});
  return {passed:checks.filter(x=>x.pass).length,total:checks.length,checks};
 }
 
-root.ZombieCore={createState,restoreState,check,transition,narrativeEvent,requestRisk,cancelRisk,confirmRisk,selfTest};
+root.ZombieCore={createState,restoreState,check,transition,narrativeEvent,applyStoryEvent,requestRisk,cancelRisk,confirmRisk,selfTest};
 })(window);
