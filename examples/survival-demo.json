@@ -1,0 +1,98 @@
+{
+  "format": "zombie-vn-story-pack-v1",
+  "packId": "engine-demo-382-v1",
+  "startSceneId": "COM-01-S001",
+  "scenes": [
+    {
+      "id": "COM-01-S001",
+      "speaker": "시스템 · 엔진 시험",
+      "text": "이 시나리오는 생존 엔진 검증을 위한 비공식 예시입니다. 확정된 공통 제1장 대본이 아닙니다. 앞쪽 통로와 우회로 중 하나를 선택하세요.",
+      "choices": [
+        {
+          "label": "안전한 우회로를 조사한다",
+          "next": "COM-01-S002",
+          "effects": [
+            {
+              "type": "moveTo",
+              "value": "DEMO_SAFE_PATH"
+            }
+          ]
+        },
+        {
+          "label": "붕괴 위험이 있는 통로를 지난다",
+          "next": "COM-01-S003",
+          "risk": {
+            "description": "낙하물에 의한 부상 가능성 (시험용 HP -15)",
+            "retreat": "출발 지점으로 돌아가 안전한 우회로를 선택"
+          },
+          "effects": [
+            {
+              "type": "hpDelta",
+              "value": -15
+            },
+            {
+              "type": "noiseDelta",
+              "value": 2
+            },
+            {
+              "type": "moveTo",
+              "value": "DEMO_RISK_PATH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "COM-01-S002",
+      "speaker": "시스템 · 엔진 시험",
+      "text": "안전한 우회로로 이동했습니다. 실제 피해는 발생하지 않았습니다.",
+      "choices": [
+        {
+          "label": "안전 지점으로 이동한다",
+          "next": "COM-01-S004",
+          "requires": [
+            {
+              "type": "position",
+              "value": "DEMO_SAFE_PATH"
+            }
+          ],
+          "effects": [
+            {
+              "type": "moveTo",
+              "value": "DEMO_EXIT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "COM-01-S003",
+      "speaker": "시스템 · 엔진 시험",
+      "text": "위험 통로를 통과했습니다. 체력과 소음의 변화를 확인하세요. 실제 좀비 물림이 아니므로 감염 단계는 변하지 않습니다.",
+      "choices": [
+        {
+          "label": "안전 지점으로 이동한다",
+          "next": "COM-01-S004",
+          "requires": [
+            {
+              "type": "minHp",
+              "value": 1
+            }
+          ],
+          "effects": [
+            {
+              "type": "moveTo",
+              "value": "DEMO_EXIT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "COM-01-S004",
+      "speaker": "시스템 · 엔진 시험",
+      "text": "테스트 종료. 정식 본편 진행이나 엔딩 갤러리에는 반영되지 않습니다.",
+      "choices": []
+    }
+  ]
+}
