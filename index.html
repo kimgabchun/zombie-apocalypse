@@ -29,10 +29,68 @@ function unlocked(){return TRUE_IDS.every(id=>gallery.unlockedEndings.includes(i
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function button(label,fn,cls='secondary'){const b=document.createElement('button');b.className=cls;b.textContent=label;b.onclick=fn;return b}
 function modal(title,html,buttons){const d=document.createElement('div');d.className='overlay';const m=document.createElement('div');m.className='modal';m.innerHTML='<h2>'+esc(title)+'</h2>'+html;const a=document.createElement('div');a.className='modal-actions';buttons.forEach(([t,f,c])=>a.append(button(t,()=>{d.remove();f&&f()},c||'secondary')));m.append(a);d.append(m);document.body.append(d)}
-function menu(){run=null;$('#app').innerHTML='<div class="top"><span class="brand">APOCALYPSE / VISUAL NOVEL</span><span class="small">376단계 · v0.4</span></div><div class="menu"><div class="small">좀비 비주얼 노벨</div><h1>아포칼립스에서<br>살아남기</h1><p>모바일 실행형 프로토타입. 본편 60장·720장면은 설계 구조만 등록되어 있으며 원본 대본 전체는 아직 탑재되지 않았습니다.</p><div class="notice">통합 트루 12장면을 시험 플레이할 수 있습니다. 핵심 증거의 독립 검증 자료는 미탑재되어 엔딩 판정은 보류됩니다. 일반 해금 조건은 개인 트루 5종 등록이며, 이 빌드에는 엔진 검증용 체험 모드가 별도로 있습니다.</div><div id="menuActions"></div><h3>갤러리 (프로토타입)</h3><p id="galleryInfo"></p><h3>본편 콘텐츠</h3><p>공통 10장 + 5개 개인 루트 각 10장. 원본 장면 데이터를 가져오기 전까지 본편은 실행되지 않습니다.</p></div>';const a=$('#menuActions');a.style.cssText='display:grid;gap:10px';a.append(button('통합 트루 시작 (정식 해금)',()=>{if(!unlocked())return modal('해금 조건 미충족','<p>다섯 히로인의 개인 트루 엔딩을 모두 등록해야 합니다. 이 프로토타입은 해당 개인 루트의 대본을 아직 탑재하지 않았으므로 정식 해금은 현재 불가능합니다.</p>',[['확인']]);start(false)},'primary'));a.append(button('통합 트루 체험 모드 시작',()=>start(true)));const old=restore();if(old)a.append(button('저장된 회차 이어하기',()=>{run=old;if(run.pendingAction){const pending=run.pendingAction;run.pendingAction=null;if(!save()){run.pendingAction=pending;return}modal('미확정 행동 복구','<p>종료 전에 확인되지 않은 위험 행동은 취소했습니다. 피해나 이동은 적용되지 않았습니다.</p>',[['계속',render]])}else render()}));a.append(button('전체 챕터 ID 목록',showIndex));a.append(button('저장 데이터 JSON 백업',exportBackup));a.append(button('JSON 백업 불러오기',importBackup));a.append(button('엔진 자체 검사',selfTest));$('#galleryInfo').textContent='개인 트루 '+TRUE_IDS.filter(x=>gallery.unlockedEndings.includes(x)).length+'/5 · 통합 트루 '+(gallery.unlockedEndings.includes('INT_TRUE')?'획득':'미획득')+' (체험 모드 획득 불가)'}
+function menu(){run=null;$('#app').innerHTML='<div class="top"><span class="brand">APOCALYPSE / VISUAL NOVEL</span><span class="small">377단계 · v0.5</span></div><div class="menu"><div class="small">좀비 비주얼 노벨</div><h1>아포칼립스에서<br>살아남기</h1><p>모바일 실행형 프로토타입. 본편 60장·720장면은 설계 구조만 등록되어 있으며 원본 대본 전체는 아직 탑재되지 않았습니다.</p><div class="notice">통합 트루 12장면을 시험 플레이할 수 있습니다. 핵심 증거의 독립 검증 자료는 미탑재되어 엔딩 판정은 보류됩니다. 일반 해금 조건은 개인 트루 5종 등록이며, 이 빌드에는 엔진 검증용 체험 모드가 별도로 있습니다.</div><div id="menuActions"></div><h3>갤러리 (프로토타입)</h3><p id="galleryInfo"></p><h3>본편 콘텐츠</h3><p>공통 10장 + 5개 개인 루트 각 10장. 원본 장면 데이터를 가져오기 전까지 본편은 실행되지 않습니다.</p></div>';const a=$('#menuActions');a.style.cssText='display:grid;gap:10px';a.append(button('통합 트루 시작 (정식 해금)',()=>{if(!unlocked())return modal('해금 조건 미충족','<p>다섯 히로인의 개인 트루 엔딩을 모두 등록해야 합니다. 이 프로토타입은 해당 개인 루트의 대본을 아직 탑재하지 않았으므로 정식 해금은 현재 불가능합니다.</p>',[['확인']]);start(false)},'primary'));a.append(button('통합 트루 체험 모드 시작',()=>start(true)));const old=restore();if(old)a.append(button('저장된 회차 이어하기',()=>{run=old;if(run.pendingAction){const pending=run.pendingAction;run.pendingAction=null;if(!save()){run.pendingAction=pending;return}modal('미확정 행동 복구','<p>종료 전에 확인되지 않은 위험 행동은 취소했습니다. 피해나 이동은 적용되지 않았습니다.</p>',[['계속',render]])}else render()}));a.append(button('전체 챕터 ID 목록',showIndex));a.append(button('본편 대본 JSON 가져오기',importStoryPack));a.append(button('가져온 본편 플레이',playImportedStory));a.append(button('저장 데이터 JSON 백업',exportBackup));a.append(button('JSON 백업 불러오기',importBackup));a.append(button('엔진 자체 검사',selfTest));$('#galleryInfo').textContent='개인 트루 '+TRUE_IDS.filter(x=>gallery.unlockedEndings.includes(x)).length+'/5 · 통합 트루 '+(gallery.unlockedEndings.includes('INT_TRUE')?'획득':'미획득')+' (체험 모드 획득 불가)'}
 function start(demo){run=fresh();run.demo=demo;if(!save())return;render()}
 function exportBackup(){const payload={format:'zombie-vn-backup-v2',savedAt:new Date().toISOString(),run:restore(),gallery:loadGallery()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='zombie-vn-backup.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 function importBackup(){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{try{const f=input.files[0];if(!f)return;if(f.size>2000000)throw Error('파일이 너무 큽니다');const obj=JSON.parse(await f.text());if(obj.format!=='zombie-vn-backup-v2'||!obj.gallery||!Array.isArray(obj.gallery.unlockedEndings))throw Error('지원하지 않는 백업입니다');if(obj.run&&!(obj.run.schemaVersion===1&&obj.run.mode==='INTEGRATED_TRUE'&&Number.isInteger(obj.run.sceneIndex)&&obj.run.sceneIndex>=0&&obj.run.sceneIndex<SCENES.length&&obj.run.protagonist&&obj.run.flags&&obj.run.processedEventIds))throw Error('회차 데이터 형식이 올바르지 않습니다');const beforeRun=localStorage.getItem(KEY),beforeGallery=localStorage.getItem(GALLERY);try{if(obj.run)localStorage.setItem(KEY,JSON.stringify(obj.run));localStorage.setItem(GALLERY,JSON.stringify(obj.gallery))}catch(e){if(beforeRun===null)localStorage.removeItem(KEY);else localStorage.setItem(KEY,beforeRun);if(beforeGallery===null)localStorage.removeItem(GALLERY);else localStorage.setItem(GALLERY,beforeGallery);throw e}gallery=loadGallery();menu();modal('복원 완료','<p>JSON 백업을 불러왔습니다. 저장된 회차와 갤러리 정보를 확인하세요.</p>',[['확인']])}catch(e){modal('복원 실패','<p>'+esc(e.message)+'</p>',[['확인']])}};input.click()}
+
+// v0.5: independent imported-story sandbox; does not alter integrated-true save or gallery.
+const STORY_KEY='zombie-vn-story-pack-v1';
+const STORY_PROGRESS_KEY='zombie-vn-story-progress-v1';
+function validStoryId(id){return typeof id==='string'&&(/^(COM-(0[1-9]|10)|(?:HYJ|CSY|LCR|SHR|JSA)-(1[1-9]|20))-S(00[1-9]|01[0-2])$/.test(id))}
+function checkStoryPack(data){
+ if(!data||data.format!=='zombie-vn-story-pack-v1'||!Array.isArray(data.scenes))throw Error('지원하지 않는 대본 형식입니다.');
+ if(data.scenes.length<1||data.scenes.length>720)throw Error('장면 개수가 유효하지 않습니다.');
+ const seen=new Set();
+ for(const sc of data.scenes){
+  if(!sc||!validStoryId(sc.id)||seen.has(sc.id))throw Error('장면 ID 오류 또는 중복: '+String(sc&&sc.id));
+  seen.add(sc.id);
+  if(typeof sc.speaker!=='string'||sc.speaker.length>100||typeof sc.text!=='string'||sc.text.length>10000)throw Error('대사 형식 오류: '+sc.id);
+  if(!Array.isArray(sc.choices)||sc.choices.length>12)throw Error('선택지 형식 오류: '+sc.id);
+  for(const c of sc.choices)if(!c||typeof c.label!=='string'||c.label.length>300||!validStoryId(c.next))throw Error('선택지 목적지 오류: '+sc.id);
+  if(sc.next!==undefined&&sc.next!==null&&!validStoryId(sc.next))throw Error('다음 장면 ID 오류: '+sc.id);
+ }
+ for(const sc of data.scenes){
+  if(sc.next&&!seen.has(sc.next))throw Error('대본 묶음에 없는 다음 장면: '+sc.next);
+  for(const c of sc.choices)if(!seen.has(c.next))throw Error('대본 묶음에 없는 선택지 목적지: '+c.next);
+ }
+ if(!seen.has(data.startSceneId))throw Error('시작 장면이 존재하지 않습니다.');
+ // Imported packs are linear or explicit-link previews only; condition-dependent branches are not yet supported.
+ if(data.scenes.some(sc=>sc.conditions||sc.effects||sc.ending))throw Error('조건·상태 변경·엔딩이 포함된 장면은 아직 지원하지 않습니다.');
+ return data;
+}
+function importStoryPack(){
+ const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
+ input.onchange=async()=>{
+  try{
+   const file=input.files&&input.files[0];if(!file)return;
+   if(file.size>3000000)throw Error('파일 크기 제한 3MB를 초과했습니다.');
+   const data=checkStoryPack(JSON.parse(await file.text()));
+   localStorage.setItem(STORY_KEY,JSON.stringify(data));
+   localStorage.removeItem(STORY_PROGRESS_KEY);
+   modal('대본 가져오기 완료','<p>검증된 장면 '+data.scenes.length+'개를 등록했습니다. 기존 통합 트루 저장과 갤러리는 변경하지 않았습니다.</p>',[['확인',menu]]);
+  }catch(e){modal('대본 가져오기 실패','<p>'+esc(e.message)+'</p>',[['확인']])}
+ };
+ input.click();
+}
+function playImportedStory(){
+ let data;try{data=checkStoryPack(JSON.parse(localStorage.getItem(STORY_KEY)))}catch(e){return modal('대본 미등록','<p>먼저 본편 대본 JSON을 가져와 주세요. 조건부 분기는 아직 지원하지 않습니다.</p>',[['확인']])}
+ const map=new Map(data.scenes.map(x=>[x.id,x]));
+ let current=data.startSceneId;
+ try{const saved=JSON.parse(localStorage.getItem(STORY_PROGRESS_KEY));if(saved&&saved.packId===data.packId&&map.has(saved.sceneId))current=saved.sceneId}catch{}
+ function show(){
+  const sc=map.get(current);
+  $('#app').innerHTML='<div class="top"><span class="brand">본편 대본 미리보기</span><button class="tool" id="storyMenu">메뉴</button></div><div class="status"><span class="pill">'+esc(sc.id)+'</span><span class="pill">가져온 장면 '+data.scenes.length+'개</span></div><div class="stage"><div class="scene-tag">'+esc(sc.id)+'</div><div class="scene-name">본편 대본</div><div class="stage-note">조건·생존 판정 없는 대본 미리보기</div></div><div class="panel"><div class="speaker">'+esc(sc.speaker)+'</div><div class="dialogue">'+esc(sc.text)+'</div><div class="choices" id="storyChoices"></div></div>';
+  $('#storyMenu').onclick=menu;
+  const choices=$('#storyChoices');
+  const go=id=>{current=id;try{localStorage.setItem(STORY_PROGRESS_KEY,JSON.stringify({packId:data.packId,sceneId:id}))}catch{}show()};
+  sc.choices.forEach(c=>choices.append(button(c.label,()=>go(c.next),'choice')));
+  if(!sc.choices.length&&sc.next)choices.append(button('다음 장면',()=>go(sc.next),'choice'));
+  if(!sc.choices.length&&!sc.next)choices.append(button('미리보기 종료',menu,'primary'));
+ }
+ show();
+}
+
 function showIndex(){let ids=[];for(let ch=1;ch<=10;ch++)ids.push('COM-'+String(ch).padStart(2,'0'));for(const h of HEROES)for(let ch=11;ch<=20;ch++)ids.push(h[0]+'-'+ch);modal('본편 60개 챕터 ID','<p>챕터 '+ids.length+'개 / 장면 ID '+ids.length*12+'개 (구조 생성, 대본 미탑재)</p><pre>'+esc(ids.join(' · '))+'</pre>',[['닫기']])}
 function render(){if(!run)return menu();if(run.ending.result)return endScreen();const s=SCENES[run.sceneIndex];if(!s)return menu();run.sceneId=s.id;$('#app').innerHTML='<div class="top"><span class="brand">아포칼립스에서 살아남기</span><div class="toolbar"><button class="tool" id="saveBtn">저장</button><button class="tool" id="stateBtn">상태</button><button class="tool" id="journalBtn">기록</button><button class="tool" id="menuBtn">메뉴</button></div></div><div class="status"><span class="pill">HP '+run.protagonist.hp+'</span><span class="pill">감염 '+run.protagonist.infectionStage+'/4</span><span class="pill">소음 '+run.noise+'</span><span class="pill">'+(run.demo?'체험 모드':'정식 회차')+'</span></div><div class="stage"><div class="scene-tag">'+esc(s.id)+' · '+(run.sceneIndex+1)+'/12</div><div class="scene-name">'+esc(s.name)+'</div><div class="stage-note">통합 트루 · 봉인 너머의 새벽</div></div><div class="panel"><div class="speaker">'+esc(s.speaker)+'</div><div class="dialogue">'+esc(s.text)+'</div><div id="extra"></div><div class="choices" id="choices"></div></div>';$('#saveBtn').onclick=()=>{if(save())modal('저장 완료','<p>현재 회차가 이 브라우저의 로컬 저장소에 저장되었습니다.</p>',[['확인']])};$('#stateBtn').onclick=stateView;$('#journalBtn').onclick=journalView;$('#menuBtn').onclick=()=>modal('메뉴로 돌아가기','<p>현재 진행 상태는 자동 저장되어 있습니다.</p>',[['돌아가기'],['메뉴로',menu]]);const cs=$('#choices');s.choices.forEach((c,i)=>cs.append(button(String.fromCharCode(65+i)+'. '+c[0],()=>choose(c[1]),'choice')));if(run.sceneIndex===9&&!coreVerified())$('#extra').innerHTML='<div class="notice">현재 확인된 핵심 검증: '+REQUIRE.filter(x=>run.flags[x]).length+'/'+REQUIRE.length+' · 부족한 증거는 최종 판정에서 보류됩니다.</div>'}
 function journalView(){const events=Array.isArray(run.log)?run.log:[];const completed=Object.keys(run.completedScenes||{});const html='<p>완료한 장면: '+completed.length+'개 · 기록된 실제 사건: '+events.length+'개</p><pre>'+esc(events.length?events.map((e,i)=>(i+1)+'. '+String(e)).join('\n'):'아직 기록된 실제 사건이 없습니다.')+'</pre><div class="notice">단순 조사 선택과 실제 발생한 사건은 구분됩니다. 이 기록은 현재 회차의 기록이며 다른 회차의 기억이 아닙니다.</div>';modal('생존 기록',html,[['닫기']])}
